@@ -1,0 +1,2 @@
+defmodule YoudaoDict do
+end
