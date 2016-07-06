@@ -30,8 +30,11 @@ defmodule YoudaoDict do
 
   defp parse_phonetic_symbol(document) do
     document
-      |> all_nodes('//phonetic-symbol[1]/text()[1]')
-      |> Enum.map(&node_text/1)
+      |> map_nodes('//phonetic-symbol[1]/text()[1]', &node_text/1)
+  end
+
+  defp map_nodes(node, path, mapper \\ &node_text/1) do
+    :xmerl_xpath.string(path, node) |> Enum.map(mapper)
   end
 
   defp node_text(node) do
@@ -45,19 +48,17 @@ defmodule YoudaoDict do
 
   defp parse_translation(document) do
     document
-      |> all_nodes('//translation/content/text()')
-      |> Enum.map(&node_text/1)
+      |> map_nodes('//translation/content/text()')
   end
 
   defp parse_web_translations(document) do
     document
-      |> all_nodes('//yodao-web-dict/web-translation')
-      |> Enum.map(&parse_web_translation/1)
+      |> map_nodes('//yodao-web-dict/web-translation', &parse_web_translation/1)
   end
 
   defp parse_web_translation(node) do
     key = node |> first_node_text("key")
-    trans = node |> all_nodes('//trans/value/text()') |> Enum.map(&node_text/1)
+    trans = node |> map_nodes('//trans/value/text()')
     { key, trans }
   end
 
@@ -65,10 +66,6 @@ defmodule YoudaoDict do
     nodes = (path <> "/text()") |> to_char_list |> :xmerl_xpath.string(node)
     [first|_] = nodes
     node_text(first)
-  end
-
-  defp all_nodes(node, path) do
-    :xmerl_xpath.string(path, node)
   end
 
   defp print_out(%{
@@ -79,20 +76,26 @@ defmodule YoudaoDict do
   }) do
 
     IO.write indent() <> word
-    if length(phonetic) > 0 do
-      IO.write cyan(" [" <> Enum.join(phonetic, ", ") <> "]\n")
+    case length(phonetic) > 0 do
+      true -> IO.write cyan(" [" <> Enum.join(phonetic, ", ") <> "]\n")
+      false -> IO.write "\n"
     end
 
-    IO.puts "=== " <> "辞典翻译: " <> word <> " ==="
-
+    title "辞典翻译: ", ?=
     Enum.each(official_translations, fn(trans) -> IO.puts indent() <> green(trans) end)
 
-    IO.puts "=== " <> "网络释义" <> " ==="
+    title "网络释义"
     Enum.each(web_translations, &print_web_translation/1)
   end
 
+  defp title(word, padder \\ ?-, len \\ 30) do
+    word
+      |> center(len, padder)
+      |> IO.puts
+  end
+
   defp indent(width \\ 2) do
-    "  "
+    String.duplicate(" ", width)
   end
 
   defp cyan(text) do
@@ -104,8 +107,36 @@ defmodule YoudaoDict do
   end
 
   defp print_web_translation({ key, translations }) do
-    IO.puts "--- " <> key <> " ---"
+    title key
     Enum.each(translations, fn(trans) -> IO.puts(indent() <> trans) end)
+  end
+
+  def center(word, length, padder \\ ?=) do
+    word_len = String.length(word)
+
+    case word_len do
+
+      0 ->
+        String.duplicate(padder, length)
+
+      _ when word_len >= length ->
+        word
+
+      _ when word_len == length - 1 ->
+        " " <> word
+
+      _ when word_len == length - 2 ->
+        " " <> word <> " "
+
+      len ->
+        padding = div(length - len, 2) - 1
+
+        Enum.join([
+          String.duplicate(<<padder>>, length - padding - len - 2),
+          word,
+          String.duplicate(<<padder>>, padding)
+        ], " ")
+    end
   end
 
 end

@@ -3,16 +3,28 @@ defmodule YoudaoDictTest do
   doctest YoudaoDict
 
   test "it should translate word 'test'" do
-    translation = YoudaoDict.translate("task")
-    assert translation == %{
-      phonetic: ["tɑ:sk, tæsk"],
-      official_translations: ["n. 工作，作业；任务", "vt. 分派任务"],
-      web_translations: [
-        {"Task", ["任务", "工作", "作业"]},
-        {"Task List", ["任务列表", "工作清单", "任务清单"]},
-        {"Task Assignments", ["指派工作", "指派任务"]}
+    translation = YoudaoDict.translate("what")
+
+    assert Map.take(translation, [:phonetic, :official_translations, :word]) == %{
+      phonetic: ["hwɔt, hwʌt, 弱hwət"],
+      official_translations: [
+        "pron. 什么；多么；多少",
+        "adv. 到什么程度，在哪一方面",
+        "adj. 什么；多么；何等",
+        "int. 什么；多么"
       ],
-      word: "task"
+      word: "what"
     }
+
+    assert translation.web_translations
+  end
+
+  test "it return centered string by center function" do
+    assert YoudaoDict.center("hello", 5) == "hello"
+    assert YoudaoDict.center("hello", 10) == "== hello ="
+    assert YoudaoDict.center("hello", 6) == " hello"
+    assert YoudaoDict.center("hello", 7) == " hello "
+    assert YoudaoDict.center("hello", 9) == "= hello ="
+    assert YoudaoDict.center("hello", 9, ?*) == "* hello *"
   end
 end
