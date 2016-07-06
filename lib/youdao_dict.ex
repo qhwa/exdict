@@ -22,7 +22,7 @@ defmodule YoudaoDict.CLI do
   end
 
   def process({:err}) do
-    # TODO: print help
+    IO.puts "usage: dict <word>"
   end
 
 end
