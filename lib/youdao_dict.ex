@@ -1,8 +1,25 @@
-defmodule YoudaoDict do
+defmodule YoudaoDict.CLI do
 
-  def main(word) do
-    translate(word) |> print_out
+  @moduledoc """
+    Handle the command line parsing
+  """
+
+  def main argv do
+    argv |> parse_args |> process
   end
+
+  def parse_args(args) do
+    {options, [word], _} = OptionParser.parse(args)
+    {:ok, word, options}
+  end
+
+  def process({:ok, word, _options}) do
+    YoudaoDict.translate(word) |> YoudaoDict.print_out
+  end
+
+end
+
+defmodule YoudaoDict do
 
   def translate(word) do
     word
@@ -68,7 +85,7 @@ defmodule YoudaoDict do
     node_text(first)
   end
 
-  defp print_out(%{
+  def print_out(%{
     phonetic: phonetic,
     official_translations: official_translations,
     web_translations: web_translations,
