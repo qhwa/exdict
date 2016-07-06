@@ -9,12 +9,20 @@ defmodule YoudaoDict.CLI do
   end
 
   def parse_args(args) do
-    {options, [word], _} = OptionParser.parse(args)
-    {:ok, word, options}
+    case OptionParser.parse(args) do
+      {options, [word], _}  ->
+        {:ok, word, options}
+      _ ->
+        {:err}
+    end
   end
 
   def process({:ok, word, _options}) do
     YoudaoDict.translate(word) |> YoudaoDict.print_out
+  end
+
+  def process({:err}) do
+    # TODO: print help
   end
 
 end
