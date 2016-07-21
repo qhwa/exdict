@@ -19,6 +19,20 @@ defmodule YoudaoDictTest do
     assert translation.web_translations
   end
 
+  test "it should translate chinese word" do
+    translation = YoudaoDict.translate("世界")
+    assert translation == %{
+      official_translations: ["world", "earth", "welt"],
+      phonetic: ["shì jiè"],
+      web_translations: [
+        {"世界", ["World", "world", "世界"]},
+        {"世界观", ["world view", "Weltanschauung", "世界観"]},
+        {"粘粘世界", ["World of Goo", "グーの惑星", "월드 오브 구"]}
+      ],
+      word: "世界"
+    }
+  end
+
   test "it return centered string by center function" do
     assert YoudaoDict.center("hello", 5) == "hello"
     assert YoudaoDict.center("hello", 10) == "== hello ="

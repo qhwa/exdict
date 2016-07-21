@@ -39,7 +39,7 @@ defmodule YoudaoDict do
   defp fetch_translation(word) do
     :inets.start()
 
-    "http://dict.youdao.com/fsearch?q=" <> word
+    "http://dict.youdao.com/fsearch?q=" <> URI.encode(word)
       |> to_char_list
       |> :httpc.request
   end
